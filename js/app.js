@@ -150,11 +150,10 @@
     return '';
   }
   function validateSteam(v) {
-    var t = normalizeSteamUrl(v);
+    var t = v.trim();
     if (!t) return '스팀 프로필 주소를 붙여넣어 주세요.';
-    // "steam"으로 시작하고 숫자로 끝난다면 그대로 허용 (완화 검증)
-    if (/^steam/i.test(t) && /\d$/.test(t)) return '';
-    return '"steam"으로 시작해 숫자로 끝나야 합니다. 예) https://steamcommunity.com/profiles/7656119...';
+    if (t.indexOf('steamcommunity.com') !== -1) return '';
+    return '올바른 스팀 프로필 주소 형식이 아닙니다. "steamcommunity.com"이 포함되어야 합니다.';
   }
   function validateDiscord(v) {
     var t = v.trim();

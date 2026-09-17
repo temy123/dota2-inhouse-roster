@@ -80,7 +80,16 @@
     var name = customNameFromUrl(steamUrl);
     if (name) return 'cu_' + name;
     var tail = tailNumberFromUrl(steamUrl);
-    return tail ? 'cu_' + tail : null;
+    if (tail) return 'cu_' + tail;
+
+    // steamcommunity.com이 포함되어 있으나 위 규칙으로 고유 키를 뽑지 못하는 경우 fallback
+    if (steamUrl.indexOf('steamcommunity.com') !== -1) {
+      var cleaned = steamUrl.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      if (cleaned.length > 0) {
+        return 'cu_' + cleaned.substring(0, 50);
+      }
+    }
+    return null;
   }
 
   /* ---------- 오류 메시지 번역 ---------- */
