@@ -28,10 +28,9 @@ service cloud.firestore {
             || docId.matches('^cu_[a-z0-9][a-z0-9._-]{1,31}$');
       }
 
-      // 스팀 URL 검증: "steam으로 시작하고 숫자로 끝"이면 허용
-      // (http(s)://, www, 종료 슬래시(/) 유무 관계없이)
+      // 스팀 URL 검증: "steamcommunity.com"이 포함되어 있으면 허용
       function validSteamUrl(s) {
-        return s.matches('^([Hh][Tt][Tt][Pp][Ss]?://)?([Ww][Ww][Ww]\\.)?steam.*[0-9]/?$');
+        return s.matches('.*steamcommunity\\.com.*');
       }
 
       // 포지션 배열: 지정된 5개 값이 정확히 5개씩 모두 포함

@@ -86,7 +86,7 @@
     if (steamUrl.indexOf('steamcommunity.com') !== -1) {
       var cleaned = steamUrl.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
       if (cleaned.length > 0) {
-        return 'cu_' + cleaned.substring(0, 50);
+        return 'cu_' + cleaned.substring(0, 28);
       }
     }
     return null;
