@@ -1,0 +1,111 @@
+rules_version = '2';
+
+/* ============================================================
+   Firestore 보안 규칙 — 도타2 인하우스 로스터
+   -----------------------------------------------------------
+   원칙:
+   1. 모든 읽기(read) 차단 — 클라이언트는 자신이 쓴 문서조차
+       열람하지 못함. 중복 처리는 createdAt을 보존하는 merge update로
+       진행되므로 읽기 권한이 불필요하다.
+   2. 쓰기(write)는 rosters 컬렉션의 특정 문서만 허용:
+      - 문서 ID가 17자리 Steam ID 또는 'cu_' 접두어(커스텀 네임)
+        이어야 함
+      - 데이터 형식(필드 타입, 길이, MMR 범위, 포지션 배열) 검증
+   3. update 시 createdAt 필드는 절대 수정 불가
+   4. delete는 항상 거부 (삭제는 관리 콘솔에서만 수행)
+   5. App Check 활성화 시 (선택, 강력 권장) — SECURITY_GUIDE.md
+      3절 참고: allow 조건의 appCheckOk() 주석 해제
+   ============================================================ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /rosters/{docId} {
+
+      // 문서 ID 검증: 17자리 Steam ID64 또는 cu_ 접두어(커스텀 네임/끝 숫자)
+      function validDocId() {
+        return docId.matches('^[0-9]{17}$')
+            || docId.matches('^cu_[a-z0-9][a-z0-9._-]{1,31}$');
+      }
+
+      // 스팀 URL 검증: "steam으로 시작하고 숫자로 끝"이면 허용
+      // (http(s)://, www, 종료 슬래시(/) 유무 관계없이)
+      function validSteamUrl(s) {
+        return s.matches('^([Hh][Tt][Tt][Pp][Ss]?://)?([Ww][Ww][Ww]\\.)?steam.*[0-9]/?$');
+      }
+
+      // 포지션 배열: 지정된 5개 값이 정확히 5개씩 모두 포함
+      function validPositions(arr) {
+        return arr is list
+            && arr.size() == 5
+            && arr.hasAll(['carry', 'mid', 'offlane', 'pos4', 'pos5']);
+      }
+
+      // 허용하는 데이터 구조: 필수 필드 누락 및 임의 필드 삽입을 모두 거부
+      function validShape(d) {
+        return d.keys().hasOnly([
+          'nickname', 'steamUrl', 'steamId', 'customName',
+          'discordId', 'mmr', 'positions', 'createdAt', 'updatedAt'
+        ])
+        && d.keys().hasAll([
+          'nickname', 'steamUrl', 'steamId', 'customName',
+          'discordId', 'mmr', 'positions', 'createdAt', 'updatedAt'
+        ]);
+      }
+
+      // 공통 필드 검증 (update에서도 request.resource.data는 전체 결과 문서)
+      function validFields(d) {
+        return
+          d.nickname is string
+          && d.nickname.size() > 0
+          && d.nickname.size() <= 24
+          && validSteamUrl(d.steamUrl)
+          && (d.steamId == null || d.steamId.matches('^[0-9]{17}$'))
+          && (d.customName == null || d.customName.matches('^[a-z0-9._-]{2,32}$'))
+          && d.discordId is string
+          && d.discordId.size() > 0
+          && d.discordId.size() <= 64
+          && !d.discordId.matches(' .*')
+          && d.mmr is int
+          && d.mmr >= 0
+          && d.mmr <= 100000
+          && validPositions(d.positions)
+          && d.createdAt is timestamp
+          && d.updatedAt is timestamp;
+      }
+
+      // (선택) App Check가 검증된 요청만 허용 — App Check 설정 후 주석 해제
+      // function appCheckOk() {
+      //   return request.auth.token.app == 'verified';
+      // }
+
+      // 읽기: 차단
+      allow read: if false;
+
+      // 생성: 모든 필수 필드 포함 + 형식 검증
+      allow create: if
+        // appCheckOk() &&
+        validDocId()
+        && validShape(request.resource.data)
+        && validFields(request.resource.data);
+
+      // 업데이트: 기존 문서 필드 갱신 (createdAt 변경 금지)
+      allow update: if
+        // appCheckOk() &&
+        validDocId()
+        && validShape(request.resource.data)
+        && validFields(request.resource.data)
+        // request.resource.data는 변경 필드만이 아니라 "변경 후 전체 문서"다.
+        // 따라서 createdAt의 존재 여부가 아닌 기존 값과의 동일성을 비교해야 한다.
+        && request.resource.data.createdAt == resource.data.createdAt;
+
+      // 삭제: 거부
+      allow delete: if false;
+    }
+
+    // 그 외 모든 경로: 접근 금지
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

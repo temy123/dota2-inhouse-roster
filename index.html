@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="도타2 인하우스 선발용 선수 정보 등록 페이지" />
+  <meta name="theme-color" content="#06080e" />
+  <title>도타2 인하우스 로스터 등록</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <noscript>
+    <div style="padding:40px;text-align:center;font-family:sans-serif;color:#f4efe6">
+      이 페이지는 JavaScript가 필요합니다. 브라우저 설정에서 JavaScript를 활성화해 주세요.
+    </div>
+  </noscript>
+
+  <!-- 배경 애니메이션 레이어 -->
+  <div class="bg" aria-hidden="true">
+    <div class="bg-base"></div>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-particles"></div>
+  </div>
+
+  <!-- 상단바 + 진행도 -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">⚔</span>
+        <span>도타2 인하우스 로스터</span>
+      </div>
+      <nav class="progress hidden" id="progress" aria-label="진행 단계"></nav>
+    </div>
+    <div class="track" aria-hidden="true"><div class="track-fill" id="track-fill"></div></div>
+  </header>
+
+  <main class="stage" id="stage">
+    <!-- STEP 0: 시작 화면 -->
+    <section class="step active" data-step="0">
+      <p class="kicker">DOTA 2 IN-HOUSE ROSTER</p>
+      <h1 class="step-title" tabindex="-1">팀을<br />완성합니다</h1>
+      <p class="step-desc">인하우스 선발을 위해 선수 정보를 등록해 주세요.<br />총 5단계, 약 1분이면 충분합니다.</p>
+      <div class="step-actions single">
+        <button type="button" class="btn btn-primary btn-lg" id="btn-start">시작하기</button>
+      </div>
+      <p class="step-footnote">이미 등록된 스팀 프로필로 제출하면 정보는 자동으로 갱신됩니다.</p>
+    </section>
+
+    <!-- STEP 1: 닉네임 -->
+    <section class="step" data-step="1">
+      <p class="kicker">STEP 1 / 5</p>
+      <h2 class="step-title" tabindex="-1">닉네임</h2>
+      <p class="step-desc">도타2에서 사용하는 닉네임을 입력해 주세요.</p>
+      <div class="input-wrap">
+        <input id="input-nickname" data-field="nickname" type="text" maxlength="24" autocomplete="off" spellcheck="false" placeholder="도타2 닉네임" />
+        <span class="input-underline" aria-hidden="true"></span>
+      </div>
+      <p class="field-error" id="error-nickname" role="alert"></p>
+      <div class="step-actions">
+        <button type="button" class="btn btn-ghost" data-back>뒤로</button>
+        <button type="button" class="btn btn-primary" data-next>다음</button>
+      </div>
+    </section>
+
+    <!-- STEP 2: 스팀 프로필 -->
+    <section class="step" data-step="2">
+      <p class="kicker">STEP 2 / 5</p>
+      <h2 class="step-title" tabindex="-1">스팀 프로필</h2>
+      <p class="step-desc">스팀 프로필 주소를 붙여넣어 주세요.</p>
+      <div class="input-wrap">
+        <input id="input-steam" data-field="steam" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://steamcommunity.com/profiles/7656119..." />
+        <span class="input-underline" aria-hidden="true"></span>
+      </div>
+      <p class="field-error" id="error-steam" role="alert"></p>
+      <p class="field-hint"><strong>예)</strong> https://steamcommunity.com/profiles/76561197990650432 — 끝 슬래시(/)가 있어도 되고, http(s)://가 없어도 됩니다.</p>
+      <div class="step-actions">
+        <button type="button" class="btn btn-ghost" data-back>뒤로</button>
+        <button type="button" class="btn btn-primary" data-next>다음</button>
+      </div>
+    </section>
+
+    <!-- STEP 3: 디스코드 -->
+    <section class="step" data-step="3">
+      <p class="kicker">STEP 3 / 5</p>
+      <h2 class="step-title" tabindex="-1">디스코드</h2>
+      <p class="step-desc">디스코드 아이디를 입력해 주세요.</p>
+      <div class="input-wrap">
+        <input id="input-discord" data-field="discord" type="text" maxlength="64" autocomplete="off" spellcheck="false" placeholder="username#1234" />
+        <span class="input-underline" aria-hidden="true"></span>
+      </div>
+      <p class="field-error" id="error-discord" role="alert"></p>
+      <p class="field-hint">디스코드 설정 → 내 정보 → <strong>아이디 복사</strong>. 'username#1234' 또는 숫자 ID 형태</p>
+      <div class="step-actions">
+        <button type="button" class="btn btn-ghost" data-back>뒤로</button>
+        <button type="button" class="btn btn-primary" data-next>다음</button>
+      </div>
+    </section>
+
+    <!-- STEP 4: MMR -->
+    <section class="step" data-step="4">
+      <p class="kicker">STEP 4 / 5</p>
+      <h2 class="step-title" tabindex="-1">현재 MMR</h2>
+      <p class="step-desc">랭크 게임 화면의 현재 MMR을 입력해 주세요.</p>
+      <div class="input-wrap">
+        <input id="input-mmr" data-field="mmr" type="text" inputmode="numeric" maxlength="6" autocomplete="off" spellcheck="false" placeholder="예: 3500" />
+        <span class="input-underline" aria-hidden="true"></span>
+      </div>
+      <p class="field-error" id="error-mmr" role="alert"></p>
+      <p class="field-hint">0 ~ 100,000 사이의 정수로 입력해 주세요. (승급 포인트 포함)</p>
+      <div class="step-actions">
+        <button type="button" class="btn btn-ghost" data-back>뒤로</button>
+        <button type="button" class="btn btn-primary" data-next>다음</button>
+      </div>
+    </section>
+
+    <!-- STEP 5: 포지션 우선순위 -->
+    <section class="step" data-step="5">
+      <p class="kicker">STEP 5 / 5</p>
+      <h2 class="step-title" tabindex="-1">포지션 우선순위</h2>
+      <p class="step-desc">태그를 드래그해(또는 ↑↓ 버튼으로) 플레이 우선순위를 정해 주세요.</p>
+      <ol class="tag-list" id="tag-list" aria-label="포지션 우선순위">
+        <li class="tag" data-pos="carry">
+          <span class="tag-grip" aria-hidden="true">⋮⋮</span>
+          <span class="tag-rank" aria-hidden="true">1</span>
+          <span class="tag-name">캐리</span>
+          <span class="tag-controls">
+            <button type="button" class="tag-move" data-dir="-1" aria-label="캐리를 위로 이동">↑</button>
+            <button type="button" class="tag-move" data-dir="1" aria-label="캐리를 아래로 이동">↓</button>
+          </span>
+        </li>
+        <li class="tag" data-pos="mid">
+          <span class="tag-grip" aria-hidden="true">⋮⋮</span>
+          <span class="tag-rank" aria-hidden="true">2</span>
+          <span class="tag-name">미드</span>
+          <span class="tag-controls">
+            <button type="button" class="tag-move" data-dir="-1" aria-label="미드를 위로 이동">↑</button>
+            <button type="button" class="tag-move" data-dir="1" aria-label="미드를 아래로 이동">↓</button>
+          </span>
+        </li>
+        <li class="tag" data-pos="offlane">
+          <span class="tag-grip" aria-hidden="true">⋮⋮</span>
+          <span class="tag-rank" aria-hidden="true">3</span>
+          <span class="tag-name">오프</span>
+          <span class="tag-controls">
+            <button type="button" class="tag-move" data-dir="-1" aria-label="오프를 위로 이동">↑</button>
+            <button type="button" class="tag-move" data-dir="1" aria-label="오프를 아래로 이동">↓</button>
+          </span>
+        </li>
+        <li class="tag" data-pos="pos4">
+          <span class="tag-grip" aria-hidden="true">⋮⋮</span>
+          <span class="tag-rank" aria-hidden="true">4</span>
+          <span class="tag-name">4번 서폿</span>
+          <span class="tag-controls">
+            <button type="button" class="tag-move" data-dir="-1" aria-label="4번 서폿을 위로 이동">↑</button>
+            <button type="button" class="tag-move" data-dir="1" aria-label="4번 서폿을 아래로 이동">↓</button>
+          </span>
+        </li>
+        <li class="tag" data-pos="pos5">
+          <span class="tag-grip" aria-hidden="true">⋮⋮</span>
+          <span class="tag-rank" aria-hidden="true">5</span>
+          <span class="tag-name">5번 서폿</span>
+          <span class="tag-controls">
+            <button type="button" class="tag-move" data-dir="-1" aria-label="5번 서폿을 위로 이동">↑</button>
+            <button type="button" class="tag-move" data-dir="1" aria-label="5번 서폿을 아래로 이동">↓</button>
+          </span>
+        </li>
+      </ol>
+      <div class="step-actions">
+        <button type="button" class="btn btn-ghost" data-back>뒤로</button>
+        <button type="button" class="btn btn-primary" data-next>확인하기</button>
+      </div>
+    </section>
+
+    <!-- STEP 6: 제출 전 확인 -->
+    <section class="step" data-step="6">
+      <p class="kicker">마지막 단계</p>
+      <h2 class="step-title" tabindex="-1">제출 전 확인</h2>
+      <p class="step-desc">입력한 내용이 맞는지 확인한 뒤 제출해 주세요.</p>
+      <div class="summary-card" id="summary-card" aria-live="polite"></div>
+      <div class="step-actions">
+        <button type="button" class="btn btn-ghost" data-back>뒤로</button>
+        <button type="button" class="btn btn-submit" id="btn-submit">제출하기</button>
+      </div>
+    </section>
+
+    <!-- STEP 7: 완료 화면 -->
+    <section class="step" data-step="7" id="step-success">
+      <svg class="checkmark" viewBox="0 0 52 52" aria-hidden="true">
+        <circle class="checkmark-circle" cx="26" cy="26" r="24" fill="none" />
+        <path class="checkmark-check" fill="none" d="M14.5 27.5l7.5 7.5 15.5-15.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <h2 class="step-title" id="success-title" tabindex="-1">제출 완료!</h2>
+      <p class="step-desc" id="success-desc"></p>
+      <aside class="discord-notice discord-notice-success" aria-labelledby="discord-success-title">
+        <p class="discord-notice-kicker">다음 단계 · DISCORD</p>
+        <h3 class="discord-notice-title" id="discord-success-title">서버 참여와 알림 설정을<br />다시 확인해 주세요.</h3>
+        <p class="discord-notice-text">인하우스 모집 및 매칭 공지는 디스코드로 전달됩니다. 원활한 진행을 위해 <strong>알림을 켜두세요.</strong></p>
+        <a class="discord-link" href="https://discord.gg/mAUB4UH" target="_blank" rel="noopener noreferrer">
+          <span aria-hidden="true">✦</span> 디스코드 참여하기 <span class="discord-link-arrow" aria-hidden="true">↗</span>
+        </a>
+      </aside>
+      <p class="step-footnote">같은 스팀 프로필로 다시 제출하면 정보는 자동으로 갱신됩니다.</p>
+      <div class="step-actions single">
+        <button type="button" class="btn btn-ghost" id="btn-restart">새로 시작하기</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- 등록 시작 전 디스코드 안내 모달 -->
+  <div class="modal-overlay" id="discord-modal">
+    <div class="modal discord-modal" role="dialog" aria-modal="true" aria-labelledby="discord-modal-title" aria-describedby="discord-modal-desc">
+      <p class="modal-kicker discord-modal-kicker">필수 안내 · DISCORD</p>
+      <h2 class="modal-title" id="discord-modal-title">인하우스 진행 공지는<br />디스코드에서 전달됩니다.</h2>
+      <p class="modal-text" id="discord-modal-desc">
+        매칭과 진행에 맞추려면 서버에 꼭 참여하고,<br />
+        <strong>디스코드 알림을 켜두는 것을 권장합니다.</strong>
+      </p>
+      <a class="discord-link" href="https://discord.gg/mAUB4UH" target="_blank" rel="noopener noreferrer">
+        <span aria-hidden="true">✦</span> 디스코드 참여하기 <span class="discord-link-arrow" aria-hidden="true">↗</span>
+      </a>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="discord-modal-cancel">나중에 확인</button>
+        <button type="button" class="btn btn-primary" id="discord-modal-confirm">확인하고 등록하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 부계정 확인 모달 -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <p class="modal-kicker">확인</p>
+      <h3 class="modal-title" id="modal-title">부계정이 아닌지<br />확인해 주세요</h3>
+      <p class="modal-text">
+        이 정보는 <strong>본인(메인 계정)</strong>만 제출해 주세요.<br />
+        부계정 또는 다른 사람의 계정으로 제출하면 선발 과정에 혼선이 생길 수 있습니다.
+      </p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="modal-cancel">아니요, 취소합니다</button>
+        <button type="button" class="btn btn-primary" id="modal-confirm">
+          <span class="btn-label">네, 본인이 맞습니다</span>
+          <span class="spinner" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 토스트 알림 -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- Firebase compat (UMD) SDK — CDN에서 직접 로드 -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <!-- (선택) App Check 사용 시 아래 2개를 주석 해제 후 reCAPTCHA Enterprise 사이트 키를
+       firebase-config.js의 appCheckSiteKey에 입력 (SECURITY_GUIDE.md 3절 참고)
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
+  <script src="https://www.gstatic.com/recaptchaenterprise/v3.js" async defer></script>
+  -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/submit.js"></script>
+</body>
+</html>

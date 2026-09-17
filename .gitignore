@@ -1,0 +1,30 @@
+# Local browser automation artifacts
+.playwright-mcp/
+
+# Dependency directories and package-manager logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Firebase CLI local state and emulator data
+.firebase/
+firebase-debug.log
+firestore-debug.log
+*-debug.log
+
+# Private credentials and environment overrides — never commit these
+.env
+.env.*
+!.env.example
+serviceAccountKey.json
+*-service-account*.json
+*.pem
+*.key
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
