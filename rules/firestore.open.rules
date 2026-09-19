@@ -1,0 +1,92 @@
+rules_version = '2';
+
+/* ============================================================
+   Firestore 보안 규칙 — 도타2 인하우스 로스터 (1. 접수 오픈 모드)
+   -----------------------------------------------------------
+   - 읽기(read): 차단
+   - 생성/수정(write): 선수 로스터 규격 검증 후 허용
+   - 삭제(delete): 차단
+   ============================================================ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /rosters/{docId} {
+
+      // 문서 ID 검증: 17자리 Steam ID64 또는 cu_ 접두어
+      function validDocId() {
+        return docId.matches('^[0-9]{17}$')
+            || docId.matches('^cu_[a-z0-9][a-z0-9._-]{1,31}$');
+      }
+
+      // 스팀 URL 검증
+      function validSteamUrl(s) {
+        return s.matches('.*steamcommunity\\.com.*');
+      }
+
+      // 포지션 배열: 5개 지정 포지션 완전 일치
+      function validPositions(arr) {
+        return arr is list
+            && arr.size() == 5
+            && arr.hasAll(['carry', 'mid', 'offlane', 'pos4', 'pos5']);
+      }
+
+      // 허용 데이터 필드 구조
+      function validShape(d) {
+        return d.keys().hasOnly([
+          'nickname', 'steamUrl', 'steamId', 'customName',
+          'discordId', 'mmr', 'positions', 'createdAt', 'updatedAt'
+        ])
+        && d.keys().hasAll([
+          'nickname', 'steamUrl', 'steamId', 'customName',
+          'discordId', 'mmr', 'positions', 'createdAt', 'updatedAt'
+        ]);
+      }
+
+      // 공통 필드 검증
+      function validFields(d) {
+        return
+          d.nickname is string
+          && d.nickname.size() > 0
+          && d.nickname.size() <= 24
+          && validSteamUrl(d.steamUrl)
+          && (d.steamId == null || d.steamId.matches('^[0-9]{17}$'))
+          && (d.customName == null || d.customName.matches('^[a-z0-9._-]{2,32}$'))
+          && d.discordId is string
+          && d.discordId.size() > 0
+          && d.discordId.size() <= 64
+          && !d.discordId.matches(' .*')
+          && d.mmr is int
+          && d.mmr >= 0
+          && d.mmr <= 100000
+          && validPositions(d.positions)
+          && d.createdAt is timestamp
+          && d.updatedAt is timestamp;
+      }
+
+      // 읽기: 차단
+      allow read: if false;
+
+      // 생성: 규격 검증 후 허용
+      allow create: if
+        validDocId()
+        && validShape(request.resource.data)
+        && validFields(request.resource.data);
+
+      // 수정: 규격 검증 + 최초 등록일시(createdAt) 보존 필수
+      allow update: if
+        validDocId()
+        && validShape(request.resource.data)
+        && validFields(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt;
+
+      // 삭제: 차단
+      allow delete: if false;
+    }
+
+    // 그 외 모든 문서 차단
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

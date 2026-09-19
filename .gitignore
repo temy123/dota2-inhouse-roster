@@ -23,6 +23,13 @@ serviceAccountKey.json
 *.pem
 *.key
 
+# Output exports
+*.csv
+exports/
+raw_rosters/
+inhouse_rosters/
+dist/
+
 # Editor and operating-system files
 .vscode/
 .idea/

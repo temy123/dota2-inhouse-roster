@@ -23,8 +23,41 @@ GitHub Pages에 배포하는 **정적(Static) 제출 페이지**입니다.
 │   └── submit.js            # Firestore 저장, 중복(스팀) 처리
 ├── firestore.rules          # Firestore 보안 규칙 (반드시 배포)
 ├── SECURITY_GUIDE.md        # Firebase 보안 설정 가이드
+├── export-csv.js            # Firestore 로스터 CSV 추출 스크립트
+├── package.json             # 관리 스크립트 실행용 패키지 설정
 └── README.md
 ```
+
+## 🛠️ 통합 관리 도구 실행 안내 (주최자/관리자용)
+
+보안 규칙 설정(접수 오픈/마감) 및 등록 선수 명단 CSV 추출을 손쉽게 수행할 수 있는 대화형 관리 프로그램이 제공됩니다.
+
+### 1) 서비스 계정 키(Service Account) 준비
+1. [Firebase 콘솔](https://console.firebase.google.com) 접속
+2. 프로젝트 설정(⚙️) → **서비스 계정(Service Accounts)** 탭
+3. **새 비공개 키 생성(Generate new private key)** 클릭 → JSON 파일 다운로드
+4. 다운로드된 JSON 파일을 프로그램 루트 폴더에 넣거나, 프로그램 실행 후 파일 경로를 직접 입력/드래그 앤 드롭하시면 됩니다.
+   > 💡 **보안 규칙 원클릭 배포 시 필요한 권한:**
+   > Firebase 콘솔에서 발급한 기본 서비스 계정은 편집자(Editor) 권한을 가지고 있어 바로 배포가 가능합니다. 만약 별도 IAM 계정을 쓰신다면 `Firebase Rules Admin` 역할을 부여해주세요.
+
+### 2) 간편 실행 방법
+- **Windows 더블 클릭 실행**: [`run.bat`](run.bat) 파일을 더블 클릭하면 자동으로 필수 패키지 점검 후 실행됩니다.
+- **명령 프롬프트/터미널 실행**:
+  ```bash
+  npm start
+  # 또는
+  node manager.js
+  ```
+
+### 3) 주요 제공 기능
+1. **📥 등록 선수 데이터 CSV 내보내기**:
+   - `exports/raw/rosters_YYYYMMDD_HHMMSS.csv`: 원본 상세 데이터 (스팀 URL, 디스코드, 타임스탬프 등)
+   - `exports/inhouse/인하우스_선수단_YYYYMMDD_HHMMSS.csv`: 대회/매칭 프로그램 호환 데이터 (1~5지망 숫자 enum 매핑, UTF-8 BOM 지원)
+2. **🛡️ Firestore 보안 규칙 원클릭 설정**:
+   - `1) [접수 오픈]`: 신규 선수 등록 및 정보 수정을 허용하는 규칙 배포
+   - `2) [접수 마감]`: 모든 제출 및 수정을 거부(Permission Denied)하는 규칙 배포
+3. **🔄 서비스 계정 키 변경**:
+   - 프로그램 종료 없이 다른 Firebase 프로젝트의 JSON 키로 즉시 전환
 
 ## 🚀 설정 절차 (Firebase)
 

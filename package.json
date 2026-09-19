@@ -1,0 +1,24 @@
+{
+  "name": "dota-inhouse-roster",
+  "version": "1.0.0",
+  "description": "도타2 인하우스 로스터 등록 및 관리 스크립트",
+  "private": true,
+  "bin": "manager.js",
+  "pkg": {
+    "assets": [
+      "rules/**/*"
+    ],
+    "targets": [
+      "node18-win-x64"
+    ],
+    "outputPath": "dist"
+  },
+  "scripts": {
+    "start": "node manager.js",
+    "export-csv": "node export-csv.js",
+    "build:exe": "npx @yao-pkg/pkg manager.js -t node18-win-x64 -o dist/DotaInhouseManager.exe"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}

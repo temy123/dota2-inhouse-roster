@@ -1,0 +1,23 @@
+rules_version = '2';
+
+/* ============================================================
+   Firestore 보안 규칙 — 도타2 인하우스 로스터 (2. 접수 마감 모드)
+   -----------------------------------------------------------
+   - 읽기(read): 차단
+   - 쓰기(create, update, delete): 모두 차단
+   - 웹페이지에서 선수가 제출을 시도해도 권한 거부(Permission Denied)됩니다.
+   ============================================================ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /rosters/{docId} {
+      allow read, write: if false;
+    }
+
+    // 그 외 모든 문서 차단
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
