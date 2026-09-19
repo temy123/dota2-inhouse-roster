@@ -270,6 +270,10 @@
           valA = a.baseMMR || 0;
           valB = b.baseMMR || 0;
           break;
+        case 'mmrDiff':
+          valA = a.mmrDiff !== undefined ? a.mmrDiff : ((a.mmr !== undefined ? a.mmr : a.baseMMR) - (a.baseMMR || 0));
+          valB = b.mmrDiff !== undefined ? b.mmrDiff : ((b.mmr !== undefined ? b.mmr : b.baseMMR) - (b.baseMMR || 0));
+          break;
         case 'winRate': {
           const gamesA = a.totalGames !== undefined ? a.totalGames : ((a.wins || 0) + (a.losses || 0));
           const gamesB = b.totalGames !== undefined ? b.totalGames : ((b.wins || 0) + (b.losses || 0));
@@ -384,6 +388,7 @@
 
       // 현재 정렬된 컬럼 전체 셀 강조 클래스
       const isInhouseSorted = sortField === 'mmr' ? 'col-sorted' : '';
+      const isMmrDiffSorted = sortField === 'mmrDiff' ? 'col-sorted' : '';
       const isBaseSorted = sortField === 'baseMMR' ? 'col-sorted' : '';
       const isWinRateSorted = sortField === 'winRate' ? 'col-sorted' : '';
       const isStreakSorted = sortField === 'streak' ? 'col-sorted' : '';
@@ -398,6 +403,8 @@
           </td>
           <td class="col-mmr ${isInhouseSorted}">
             ${inhouseMmr ? inhouseMmr.toLocaleString() : '-'}
+          </td>
+          <td class="col-mmr ${isMmrDiffSorted}">
             ${diffHtml}
           </td>
           <td class="col-mmr ${isBaseSorted}">
