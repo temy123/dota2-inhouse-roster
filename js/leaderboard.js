@@ -270,10 +270,26 @@
           valA = a.baseMMR || 0;
           valB = b.baseMMR || 0;
           break;
-        case 'winRate':
-          valA = a.winRate !== undefined ? a.winRate : 0;
-          valB = b.winRate !== undefined ? b.winRate : 0;
-          break;
+        case 'winRate': {
+          const gamesA = a.totalGames !== undefined ? a.totalGames : ((a.wins || 0) + (a.losses || 0));
+          const gamesB = b.totalGames !== undefined ? b.totalGames : ((b.wins || 0) + (b.losses || 0));
+          valA = a.winRate !== undefined ? a.winRate : (gamesA > 0 ? (a.wins / gamesA) * 100 : 0);
+          valB = b.winRate !== undefined ? b.winRate : (gamesB > 0 ? (b.wins / gamesB) * 100 : 0);
+          
+          if (valA !== valB) {
+            return sortDirection === 'desc' ? valB - valA : valA - valB;
+          }
+          // 동률일 경우: 총 판수(totalGames) 많은 순 -> 승리 수(wins) 많은 순 -> 인하우스 MMR 높은 순
+          if (gamesA !== gamesB) {
+            return sortDirection === 'desc' ? gamesB - gamesA : gamesA - gamesB;
+          }
+          if ((a.wins || 0) !== (b.wins || 0)) {
+            return sortDirection === 'desc' ? (b.wins || 0) - (a.wins || 0) : (a.wins || 0) - (b.wins || 0);
+          }
+          const mmrA = a.mmr !== undefined ? a.mmr : (a.baseMMR || 0);
+          const mmrB = b.mmr !== undefined ? b.mmr : (b.baseMMR || 0);
+          return sortDirection === 'desc' ? mmrB - mmrA : mmrA - mmrB;
+        }
         case 'streak':
           valA = a.streak !== undefined ? a.streak : 0;
           valB = b.streak !== undefined ? b.streak : 0;
@@ -351,8 +367,12 @@
       }).join('');
 
       // 전적 & 승률
-      const totalGames = player.totalGames || ((player.wins || 0) + (player.losses || 0));
-      const winRate = player.winRate !== undefined ? player.winRate : (totalGames > 0 ? Math.round(((player.wins || 0) / totalGames) * 100) : 0);
+      const wins = player.wins || 0;
+      const losses = player.losses || 0;
+      const totalGames = player.totalGames !== undefined ? player.totalGames : (wins + losses);
+      const winRate = totalGames > 0
+        ? (player.winRate !== undefined ? player.winRate : Math.round((wins / totalGames) * 1000) / 10)
+        : 0;
 
       // 스트릭 (연승/연패)
       let streakHtml = '-';
