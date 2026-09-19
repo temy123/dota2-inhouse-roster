@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>공개 리더보드 - 도타2 인하우스 대회</title>
+  <meta name="description" content="도타2 인하우스 대회 참가자 순위 및 전적 공개 리더보드" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>" />
+  
+  <!-- 구글 폰트 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <!-- 스타일시트 -->
+  <link rel="stylesheet" href="css/leaderboard.css" />
+
+  <!-- Firebase v10 호환 CDN (index.html과 동일 버전) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+</head>
+<body>
+  <!-- 상단 헤더 내비게이션 -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="leaderboard.html" class="brand">
+        <span class="brand-icon">⚔</span>
+        <span>도타2 인하우스</span>
+      </a>
+      <nav class="nav-links">
+        <a href="leaderboard.html" class="nav-link active">리더보드</a>
+        <a href="index.html" class="nav-link">선수 등록</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 메인 컨텐츠 영역 -->
+  <main class="app-main">
+    <div class="page-header">
+      <h1 class="page-title">공개 리더보드</h1>
+      <p class="page-desc">도타2 인하우스 참가 선수들의 공식 랭킹 및 포지션 정보입니다.</p>
+    </div>
+
+    <!-- 팩트 스트립 (Fact Strip) -->
+    <div class="fact-strip">
+      <div class="fact-card">
+        <div class="fact-label">참가 선수</div>
+        <div class="fact-value" id="stat-total-players">-</div>
+        <div class="fact-subtext">등록 완료 선수단</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-label">평균 MMR</div>
+        <div class="fact-value" id="stat-avg-mmr">-</div>
+        <div class="fact-subtext">전체 참가자 기준</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-label">최고 MMR</div>
+        <div class="fact-value" id="stat-max-mmr">-</div>
+        <div class="fact-subtext">최상위 레이팅</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-label">최종 갱신</div>
+        <div class="fact-value" id="stat-last-updated">-</div>
+        <div class="fact-subtext">데이터 기준일시</div>
+      </div>
+    </div>
+
+    <!-- 검색 & 필터 컨트롤 바 -->
+    <div class="controls-bar">
+      <div class="search-box">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input type="text" id="search-input" class="search-input" placeholder="선수 닉네임 검색..." autocomplete="off" />
+      </div>
+      <div class="filters-group">
+        <button type="button" class="filter-btn active" data-role="all">전체</button>
+        <button type="button" class="filter-btn" data-role="1">캐리 (1)</button>
+        <button type="button" class="filter-btn" data-role="2">미드 (2)</button>
+        <button type="button" class="filter-btn" data-role="3">오프 (3)</button>
+        <button type="button" class="filter-btn" data-role="4">4서폿 (4)</button>
+        <button type="button" class="filter-btn" data-role="5">5서폿 (5)</button>
+        <button type="button" class="refresh-btn" id="refresh-btn" title="데이터 새로고침">
+          <span>새로고침</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 순위표 테이블 -->
+    <div class="table-container">
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th class="col-rank">순위</th>
+            <th>선수 닉네임</th>
+            <th class="sortable sorted" data-sort="mmr" id="th-inhouse-mmr">인하우스 MMR <span class="sort-indicator">▼</span></th>
+            <th class="sortable" data-sort="baseMMR" id="th-base-mmr">본래 MMR <span class="sort-indicator"></span></th>
+            <th>희망 포지션 (1~2지망)</th>
+            <th class="sortable" data-sort="winRate">전적 (승률) <span class="sort-indicator"></span></th>
+            <th class="sortable" data-sort="streak">최근 흐름 <span class="sort-indicator"></span></th>
+          </tr>
+        </thead>
+        <tbody id="leaderboard-tbody">
+          <!-- JS 렌더링 -->
+        </tbody>
+      </table>
+      <div id="state-container"></div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <p>© 2026 도타2 인하우스 대회 조직위원회. 데이터는 대회 관리자에 의해 정기적으로 갱신됩니다.</p>
+  </footer>
+
+  <script src="js/leaderboard.js"></script>
+</body>
+</html>

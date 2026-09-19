@@ -12,6 +12,7 @@ const path = require('path');
 const readline = require('readline');
 const admin = require('firebase-admin');
 const { deployFirestoreRules } = require('./rules-deployer');
+const { createPublicLeaderboardData } = require('./leaderboard-template');
 
 // 기본 설정 경로 (실행 디렉토리 기준)
 const BASE_DIR = process.cwd();
@@ -266,6 +267,84 @@ async function handleDeployRules(rl) {
 }
 
 /**
+ * 3. 공개 리더보드 데이터 Firebase 배포 (JSON 업로드)
+ */
+async function handlePublishLeaderboard(rl) {
+  console.log('\n============================================================');
+  console.log('🌐 공개 리더보드 데이터 Firebase 배포 (JSON 업로드)');
+  console.log('============================================================');
+  console.log('Export된 로스터 JSON 파일 경로를 입력하세요.');
+  console.log('(파일을 이 콘솔 창에 드래그 앤 드롭한 뒤 Enter를 누르셔도 됩니다.)');
+  console.log('기본 예시: public-roaster/2026-09-19-1510.json');
+
+  const defaultJsonPath = 'public-roaster/2026-09-19-1510.json';
+  let inputPath = await prompt(rl, `파일 경로 [Enter 시 ${defaultJsonPath}] > `);
+  inputPath = inputPath.trim();
+  if (!inputPath) {
+    inputPath = defaultJsonPath;
+  }
+
+  // 따옴표 제거
+  if ((inputPath.startsWith('"') && inputPath.endsWith('"')) ||
+      (inputPath.startsWith("'") && inputPath.endsWith("'"))) {
+    inputPath = inputPath.slice(1, -1);
+  }
+
+  const resolvedPath = path.isAbsolute(inputPath) ? inputPath : path.resolve(BASE_DIR, inputPath);
+  if (!fs.existsSync(resolvedPath)) {
+    console.error(`\n❌ 파일을 찾을 수 없습니다: ${resolvedPath}`);
+    return;
+  }
+
+  try {
+    const rawContent = fs.readFileSync(resolvedPath, 'utf8');
+    const rawData = JSON.parse(rawContent);
+
+    if (!rawData.players || !Array.isArray(rawData.players)) {
+      console.error('\n❌ 유효한 로스터 JSON 형식이 아닙니다 ("players" 배열이 누락됨).');
+      return;
+    }
+
+    console.log(`\n⏳ 데이터를 정제 및 템플릿 변환 중입니다 (포지션 2지망 제한, 민감정보 필터링)...`);
+    const leaderboardData = createPublicLeaderboardData(rawData, {
+      title: '도타2 인하우스 공개 리더보드',
+      season: '2026'
+    });
+
+    console.log(`- 변환된 참가자 수: ${leaderboardData.overview.totalPlayers}명`);
+    console.log(`- 평균 MMR: ${leaderboardData.overview.avgMMR}`);
+    console.log(`- 최고 MMR: ${leaderboardData.overview.maxMMR}`);
+    console.log(`- 최저 MMR: ${leaderboardData.overview.minMMR}`);
+
+    const confirm = (await prompt(rl, '\n이 데이터를 Firestore [public_leaderboard/latest] 에 배포하시겠습니까? (Y/n): ')).trim().toLowerCase();
+    if (confirm !== '' && confirm !== 'y' && confirm !== 'yes') {
+      console.log('배포가 취소되었습니다.');
+      return;
+    }
+
+    console.log('\n📡 Firebase Firestore로 공개 리더보드 데이터를 업로드 중입니다...');
+    const db = getFirestoreDb(loadedServiceAccount);
+    
+    // 1) latest 문서 갱신
+    await db.collection('public_leaderboard').doc('latest').set(leaderboardData);
+
+    // 2) 히스토리 문서 저장 (선택 사항 - 배포 시점 기록)
+    const historyDocId = new Date().toISOString().replace(/[:.]/g, '-');
+    await db.collection('public_leaderboard').doc(`history_${historyDocId}`).set(leaderboardData);
+
+    console.log('\n============================================================');
+    console.log('🎉 공개 리더보드 데이터 배포 성공!');
+    console.log(`- Firestore 경로: public_leaderboard/latest`);
+    console.log(`- 등록된 선수: ${leaderboardData.overview.totalPlayers}명`);
+    console.log(`- 배포 시각: ${leaderboardData.meta.publishedAt}`);
+    console.log('이제 leaderboard.html 페이지에서 최신 순위표가 표시됩니다.');
+    console.log('============================================================');
+  } catch (err) {
+    console.error('\n❌ 리더보드 데이터 배포 실패:', err.message);
+  }
+}
+
+/**
  * 메인 실행 진입점
  */
 async function main() {
@@ -318,7 +397,8 @@ async function main() {
     console.log(` [현재 연결된 프로젝트: ${loadedServiceAccount.project_id}]`);
     console.log(' 1. 📥 등록 선수 데이터 CSV 내보내기 (원본 및 호환 포맷)');
     console.log(' 2. 🛡️  Firestore 보안 규칙 설정 (접수 오픈 / 접수 마감)');
-    console.log(' 3. 🔄 서비스 계정 키 파일 변경');
+    console.log(' 3. 🌐 공개 리더보드 데이터 Firebase 배포 (JSON 업로드)');
+    console.log(' 4. 🔄 서비스 계정 키 파일 변경');
     console.log(' 0. 🚪 종료');
     console.log('============================================================');
 
@@ -331,7 +411,10 @@ async function main() {
       case '2':
         await handleDeployRules(rl);
         break;
-      case '3': {
+      case '3':
+        await handlePublishLeaderboard(rl);
+        break;
+      case '4': {
         console.log('\n새로운 서비스 계정 JSON 파일 경로를 입력하세요:');
         const newPath = await prompt(rl, '파일 경로 > ');
         const res = loadKey(newPath);

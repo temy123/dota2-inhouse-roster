@@ -15,6 +15,12 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // 공개 리더보드: 접수 마감 상태여도 공개 리더보드는 조회 가능
+    match /public_leaderboard/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // 그 외 모든 문서 차단
     match /{document=**} {
       allow read, write: if false;

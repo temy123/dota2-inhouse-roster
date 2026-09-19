@@ -102,6 +102,12 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // 공개 리더보드: 웹 클라이언트 누구나 읽기 허용, 웹 쓰기는 금지(Admin SDK로만 작성)
+    match /public_leaderboard/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // 그 외 모든 경로: 접근 금지
     match /{document=**} {
       allow read, write: if false;
