@@ -84,6 +84,37 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // 익명 피드백은 로스터 접수 상태와 무관하게 항상 생성만 허용
+    match /feedbacks/{docId} {
+      function validFeedbackShape(d) {
+        return d.keys().hasOnly([
+          'balanceFeedback', 'teamworkFeedback', 'overallFeedback',
+          'additionFeedback', 'createdAt'
+        ])
+        && d.keys().hasAll([
+          'balanceFeedback', 'teamworkFeedback', 'overallFeedback',
+          'additionFeedback', 'createdAt'
+        ]);
+      }
+
+      function validFeedbackText(value) {
+        return value is string
+          && value.size() > 0
+          && value.size() <= 2000
+          && value.matches('.*\\S.*');
+      }
+
+      allow read: if false;
+      allow create: if
+        validFeedbackShape(request.resource.data)
+        && validFeedbackText(request.resource.data.balanceFeedback)
+        && validFeedbackText(request.resource.data.teamworkFeedback)
+        && validFeedbackText(request.resource.data.overallFeedback)
+        && validFeedbackText(request.resource.data.additionFeedback)
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
     // 공개 리더보드: 웹 클라이언트 누구나 읽기 허용, 웹 쓰기는 금지
     match /public_leaderboard/{docId} {
       allow read: if true;

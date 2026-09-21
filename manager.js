@@ -4,7 +4,8 @@
  * 
  * 1. 서비스 계정 키 파일 입력/확인
  * 2. Firestore 등록 선수 CSV 파일 추출 (원본 / 인하우스 호환 포맷)
- * 3. Firestore 보안 규칙 선택 배포 (1. 접수 오픈 / 2. 접수 마감)
+ * 3. Firestore 보안 규칙 선택 배포 (로스터 접수 오픈 / 마감)
+ * 4. 익명 내전 피드백 CSV / Markdown 종합 내보내기
  */
 
 const fs = require('fs');
@@ -21,6 +22,7 @@ const RULES_DIR = path.join(__dirname, 'rules');
 const EXPORTS_DIR = path.join(BASE_DIR, 'exports');
 const RAW_DIR = path.join(EXPORTS_DIR, 'raw');
 const INHOUSE_DIR = path.join(EXPORTS_DIR, 'inhouse');
+const FEEDBACK_DIR = path.join(EXPORTS_DIR, 'feedback');
 
 // 포지션 매핑
 const POS_LABELS = {
@@ -218,6 +220,94 @@ async function handleExportCsv() {
 }
 
 /**
+ * 1-2. 익명 내전 피드백 CSV / Markdown 종합 내보내기
+ */
+async function handleExportFeedback() {
+  console.log('\n------------------------------------------------------------');
+  console.log('💬 Firestore에서 익명 피드백을 불러오는 중입니다...');
+  try {
+    const db = getFirestoreDb(loadedServiceAccount);
+    const snapshot = await db.collection('feedbacks').get();
+
+    if (snapshot.empty) {
+      console.log('⚠️ [알림] feedbacks 컬렉션에 제출된 피드백이 없습니다.');
+      return;
+    }
+
+    const entries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    entries.sort((a, b) => {
+      const aMs = a.createdAt && typeof a.createdAt.toMillis === 'function' ? a.createdAt.toMillis() : 0;
+      const bMs = b.createdAt && typeof b.createdAt.toMillis === 'function' ? b.createdAt.toMillis() : 0;
+      return aMs - bMs;
+    });
+
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const timestampStr = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    if (!fs.existsSync(FEEDBACK_DIR)) fs.mkdirSync(FEEDBACK_DIR, { recursive: true });
+
+    const headers = ['번호', '제출일시(KST)', '밸런스적으로 개선되었으면 하는 점', '팀적으로 개선되었으면 하는 점', '전체적으로 느낀 점', '추가되었으면, 수정되었으면 하는 점'];
+    const csvRows = [headers.map(escapeCsv).join(',')];
+    entries.forEach((entry, index) => {
+      csvRows.push([
+        index + 1,
+        formatDate(entry.createdAt),
+        entry.balanceFeedback || '',
+        entry.teamworkFeedback || '',
+        entry.overallFeedback || '',
+        entry.additionFeedback || ''
+      ].map(escapeCsv).join(','));
+    });
+
+    const markdownLines = [
+      '# 도타2 인하우스 익명 피드백 종합',
+      '',
+      `- 내보낸 시각(KST): ${formatDate(now)}`,
+      `- 총 응답 수: ${entries.length}건`,
+      '',
+      '> 응답은 개인 식별 정보 없이 익명으로 저장되었습니다. 원문은 가공하지 않았습니다.',
+      ''
+    ];
+    entries.forEach((entry, index) => {
+      markdownLines.push(
+        `## ${index + 1}. 제출 시각: ${formatDate(entry.createdAt) || '시각 확인 불가'}`,
+        '',
+        '### 1. 밸런스적으로 개선되었으면 하는 점',
+        entry.balanceFeedback || '(응답 없음)',
+        '',
+        '### 2. 팀적으로 개선되었으면 하는 점',
+        entry.teamworkFeedback || '(응답 없음)',
+        '',
+        '### 3. 전체적으로 느낀 점',
+        entry.overallFeedback || '(응답 없음)',
+        '',
+        '### 4. 추가되었으면, 수정되었으면 하는 점',
+        entry.additionFeedback || '(응답 없음)',
+        '',
+        '---',
+        ''
+      );
+    });
+
+    const csvPath = path.join(FEEDBACK_DIR, `익명_피드백_${timestampStr}.csv`);
+    const markdownPath = path.join(FEEDBACK_DIR, `익명_피드백_종합_${timestampStr}.md`);
+    fs.writeFileSync(csvPath, '\uFEFF' + csvRows.join('\r\n'), 'utf8');
+    fs.writeFileSync(markdownPath, '\uFEFF' + markdownLines.join('\r\n'), 'utf8');
+
+    console.log('\n============================================================');
+    console.log(`🎉 총 ${entries.length}건의 익명 피드백을 내보냈습니다!`);
+    console.log('------------------------------------------------------------');
+    console.log('📁 1. 질문별 CSV:');
+    console.log(`   ${csvPath}`);
+    console.log('📁 2. 읽기용 Markdown 원문 종합:');
+    console.log(`   ${markdownPath}`);
+    console.log('============================================================');
+  } catch (err) {
+    console.error('❌ 피드백 내보내기 실패:', err.message);
+  }
+}
+
+/**
  * 2. Firestore 보안 규칙 배포 실행
  */
 async function handleDeployRules(rl) {
@@ -396,9 +486,10 @@ async function main() {
     console.log('\n============================================================');
     console.log(` [현재 연결된 프로젝트: ${loadedServiceAccount.project_id}]`);
     console.log(' 1. 📥 등록 선수 데이터 CSV 내보내기 (원본 및 호환 포맷)');
-    console.log(' 2. 🛡️  Firestore 보안 규칙 설정 (접수 오픈 / 접수 마감)');
-    console.log(' 3. 🌐 공개 리더보드 데이터 Firebase 배포 (JSON 업로드)');
-    console.log(' 4. 🔄 서비스 계정 키 파일 변경');
+    console.log(' 2. 💬 익명 피드백 종합 내보내기 (CSV / Markdown)');
+    console.log(' 3. 🛡️  Firestore 보안 규칙 설정 (로스터 접수 오픈 / 마감)');
+    console.log(' 4. 🌐 공개 리더보드 데이터 Firebase 배포 (JSON 업로드)');
+    console.log(' 5. 🔄 서비스 계정 키 파일 변경');
     console.log(' 0. 🚪 종료');
     console.log('============================================================');
 
@@ -409,12 +500,15 @@ async function main() {
         await handleExportCsv();
         break;
       case '2':
-        await handleDeployRules(rl);
+        await handleExportFeedback();
         break;
       case '3':
+        await handleDeployRules(rl);
+        break;
+      case '4':
         await handlePublishLeaderboard(rl);
         break;
-      case '4': {
+      case '5': {
         console.log('\n새로운 서비스 계정 JSON 파일 경로를 입력하세요:');
         const newPath = await prompt(rl, '파일 경로 > ');
         const res = loadKey(newPath);

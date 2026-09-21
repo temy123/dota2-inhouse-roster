@@ -15,12 +15,15 @@ GitHub Pages에 배포하는 **정적(Static) 제출 페이지**입니다.
 
 ```
 ├── index.html               # 메인 페이지 (6단계 위저드)
+├── feedback.html            # 내전 후 익명 피드백 단일 페이지
 ├── css/
-│   └── style.css            # 레이아웃 + 애니메이션
+│   ├── style.css            # 로스터 레이아웃 + 애니메이션
+│   └── feedback.css         # 익명 피드백 페이지 레이아웃
 ├── js/
 │   ├── firebase-config.js   # ← Firebase Web 설정을 입력할 파일
 │   ├── app.js               # 단계 제어 / 검증 / 태그 드래그 / 모달
 │   └── submit.js            # Firestore 저장, 중복(스팀) 처리
+│   └── feedback.js          # 익명 피드백 Firestore 저장
 ├── firestore.rules          # Firestore 보안 규칙 (반드시 배포)
 ├── SECURITY_GUIDE.md        # Firebase 보안 설정 가이드
 ├── export-csv.js            # Firestore 로스터 CSV 추출 스크립트
@@ -58,6 +61,9 @@ GitHub Pages에 배포하는 **정적(Static) 제출 페이지**입니다.
    - `2) [접수 마감]`: 모든 제출 및 수정을 거부(Permission Denied)하는 규칙 배포
 3. **🔄 서비스 계정 키 변경**:
    - 프로그램 종료 없이 다른 Firebase 프로젝트의 JSON 키로 즉시 전환
+4. **💬 익명 피드백 종합 내보내기**:
+   - `exports/feedback/익명_피드백_YYYYMMDD_HHMMSS.csv`: 질문별 답변을 행 단위로 정리한 CSV
+   - `exports/feedback/익명_피드백_종합_YYYYMMDD_HHMMSS.md`: 제출 순서와 질문별 원문을 읽기 쉽게 묶은 Markdown
 
 ## 🚀 설정 절차 (Firebase)
 
@@ -108,6 +114,15 @@ window.DOTA_FIREBASE_CONFIG = {
 - 같은 스팀 주소로 재제출 → `updatedAt` 갱신(업데이트) 확인
 - 제출이 거부되면 브라우저 개발자 도구 **Console**에서
   `Firestore roster write failed` 로그의 `initialCode`, `updateCode`, `docId`를 확인
+
+### 익명 내전 피드백
+
+- [`feedback.html`](feedback.html)는 내전 종료 후 사용하는 독립적인 단일 페이지입니다. 메인 페이지 상단의 **💬 익명 피드백** 링크로도 이동할 수 있습니다.
+- 네 항목(밸런스, 팀 플레이, 전체 소감, 추가·수정 사항)은 모두 필수이며 항목별 최대 2,000자입니다.
+- Firestore `feedbacks` 문서에는 `balanceFeedback`, `teamworkFeedback`, `overallFeedback`, `additionFeedback`, `createdAt`만 저장합니다. 닉네임, Steam URL/ID, 디스코드 ID, 브라우저 식별자 등 개인 식별 정보는 저장하지 않습니다.
+- 웹 클라이언트는 피드백을 읽거나 수정·삭제할 수 없습니다. 서비스 계정으로 실행하는 관리 도구 메뉴 **2. 익명 피드백 종합 내보내기**에서만 CSV와 원문 Markdown을 생성할 수 있습니다.
+- 피드백 생성 권한은 로스터 접수 오픈/마감과 별개로 항상 유지됩니다. 로스터를 마감한 경우에도 최신 [`rules/firestore.closed.rules`](rules/firestore.closed.rules)를 관리자 도구로 배포해야 합니다.
+- 피드백 기능을 처음 추가하거나 규칙을 바꾼 뒤에는 [`firestore.rules`](firestore.rules)를 Firebase 콘솔에 게시하거나 관리자 도구의 규칙 배포 메뉴를 실행해야 합니다.
 
 ## 🌐 GitHub Pages 배포
 
@@ -165,3 +180,4 @@ window.DOTA_FIREBASE_CONFIG = {
 4. ⚠️ 익명 제출은 "부계정"을 기술적으로 차단 불가 →
    제출 전 확인 모달(약속) + 관리자 수동 검토가 기본 전제
 5. ✅ 예산 알림 + 사용량 모니터링
+6. ✅ 익명 피드백: 개인 식별 필드 미수집, 웹 읽기·수정·삭제 차단, 관리자 SDK로만 종합 자료 생성

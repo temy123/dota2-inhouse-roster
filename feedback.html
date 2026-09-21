@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="도타2 인하우스 내전 익명 피드백" />
+  <meta name="theme-color" content="#06080e" />
+  <title>도타2 인하우스 익명 피드백</title>
+  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;⚔️&lt;/text&gt;&lt;/svg&gt;" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/feedback.css" />
+</head>
+<body>
+  <noscript><div class="noscript">이 페이지는 JavaScript가 필요합니다. 브라우저 설정에서 JavaScript를 활성화해 주세요.</div></noscript>
+
+  <div class="bg" aria-hidden="true">
+    <div class="bg-base"></div><div class="bg-glow bg-glow-1"></div><div class="bg-glow bg-glow-2"></div><div class="bg-particles"></div>
+  </div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html" aria-label="도타2 인하우스 로스터 페이지로 이동"><span class="brand-mark" aria-hidden="true">⚔</span><span>도타2 인하우스</span></a>
+      <span class="topbar-label">POST MATCH FEEDBACK</span>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="intro" aria-labelledby="page-title">
+      <p class="kicker">POST MATCH FEEDBACK</p>
+      <h1 id="page-title">내전은 어땠나요?</h1>
+      <p class="intro-description">다음 내전을 더 즐겁고 공정하게 만들 수 있도록 솔직한 의견을 남겨 주세요.</p>
+      <aside class="anonymous-notice" aria-label="익명 작성 안내">
+        <span class="notice-icon" aria-hidden="true">♡</span>
+        <div><strong>익명이 보장됩니다. 욕은 하지말아주세요 (마음이 약함)</strong><p>닉네임, 스팀, 디스코드 등 개인을 식별할 수 있는 정보는 저장하지 않습니다.</p></div>
+      </aside>
+    </section>
+
+    <section class="form-card" aria-labelledby="form-title">
+      <div class="form-heading"><p class="form-kicker">ANONYMOUS RESPONSE</p><h2 id="form-title">피드백 작성</h2><p>모든 항목을 작성해 주세요. 항목당 최대 2,000자까지 입력할 수 있습니다.</p></div>
+      <form id="feedback-form" novalidate>
+        <div class="question-list">
+          <div class="question-field">
+            <label for="feedback-balance"><span class="question-number">01</span> 밸런스적으로 개선되었으면 하는 점</label>
+            <textarea id="feedback-balance" name="balance" maxlength="2000" required placeholder="예: 팀 배정, MMR 차이, 영웅 제한 등 밸런스에 관한 의견을 적어 주세요."></textarea>
+            <div class="field-meta"><p class="field-error" id="error-balance" role="alert"></p><span id="count-balance" aria-live="polite">0 / 2,000</span></div>
+          </div>
+          <div class="question-field">
+            <label for="feedback-teamwork"><span class="question-number">02</span> 팀적으로 개선되었으면 하는 점</label>
+            <textarea id="feedback-teamwork" name="teamwork" maxlength="2000" required placeholder="예: 오더, 소통, 게임 진행 방식 등 팀 플레이에 관한 의견을 적어 주세요."></textarea>
+            <div class="field-meta"><p class="field-error" id="error-teamwork" role="alert"></p><span id="count-teamwork" aria-live="polite">0 / 2,000</span></div>
+          </div>
+          <div class="question-field">
+            <label for="feedback-overall"><span class="question-number">03</span> 전체적으로 느낀 점</label>
+            <textarea id="feedback-overall" name="overall" maxlength="2000" required placeholder="내전을 플레이하며 전반적으로 느낀 점을 자유롭게 적어 주세요."></textarea>
+            <div class="field-meta"><p class="field-error" id="error-overall" role="alert"></p><span id="count-overall" aria-live="polite">0 / 2,000</span></div>
+          </div>
+          <div class="question-field">
+            <label for="feedback-additions"><span class="question-number">04</span> 추가되었으면, 수정되었으면 하는 점</label>
+            <textarea id="feedback-additions" name="additions" maxlength="2000" required placeholder="예: 규칙, 운영 방식, 안내 사항 등 새로 추가하거나 수정할 점을 적어 주세요."></textarea>
+            <div class="field-meta"><p class="field-error" id="error-additions" role="alert"></p><span id="count-additions" aria-live="polite">0 / 2,000</span></div>
+          </div>
+        </div>
+        <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+        <button class="submit-button" id="submit-button" type="submit"><span class="button-label">익명으로 피드백 보내기</span><span class="spinner" aria-hidden="true"></span></button>
+      </form>
+    </section>
+
+    <section class="success-card" id="success-card" hidden aria-labelledby="success-title" tabindex="-1">
+      <div class="success-icon" aria-hidden="true">✓</div><p class="kicker">FEEDBACK SENT</p><h2 id="success-title">소중한 의견을 받았어요.</h2><p>다음 내전을 더 좋은 경험으로 만들기 위해 검토하겠습니다.</p><button class="secondary-button" id="restart-button" type="button">다른 피드백 작성하기</button>
+    </section>
+  </main>
+
+  <footer>피드백은 익명으로 저장되며, 관리자만 종합 자료에서 확인할 수 있습니다.</footer>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/feedback.js"></script>
+</body>
+</html>
