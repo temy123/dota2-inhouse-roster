@@ -115,11 +115,16 @@ service cloud.firestore {
         ]);
       }
 
+      // 줄바꿈·이모지·특수문자를 모두 허용한다. 미작성 문항은 빈 문자열을 허용한다.
       function validFeedbackText(value) {
-        return value is string
-          && value.size() > 0
-          && value.size() <= 2000
-          && value.matches('.*\\S.*');
+        return value is string && value.size() <= 4000;
+      }
+
+      function hasAnyFeedback(d) {
+        return d.balanceFeedback.size() > 0
+          || d.teamworkFeedback.size() > 0
+          || d.overallFeedback.size() > 0
+          || d.additionFeedback.size() > 0;
       }
 
       allow read: if false;
@@ -129,8 +134,21 @@ service cloud.firestore {
         && validFeedbackText(request.resource.data.teamworkFeedback)
         && validFeedbackText(request.resource.data.overallFeedback)
         && validFeedbackText(request.resource.data.additionFeedback)
-        && request.resource.data.createdAt == request.time;
-      allow update, delete: if false;
+        && hasAnyFeedback(request.resource.data)
+        && request.resource.data.createdAt is timestamp;
+      // 네트워크 응답 유실 시 같은 자동 ID로 재시도할 수 있도록, 본문이 바뀌지 않은 경우만 허용
+      allow update: if validFeedbackShape(request.resource.data)
+        && validFeedbackText(request.resource.data.balanceFeedback)
+        && validFeedbackText(request.resource.data.teamworkFeedback)
+        && validFeedbackText(request.resource.data.overallFeedback)
+        && validFeedbackText(request.resource.data.additionFeedback)
+        && hasAnyFeedback(request.resource.data)
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.balanceFeedback == resource.data.balanceFeedback
+        && request.resource.data.teamworkFeedback == resource.data.teamworkFeedback
+        && request.resource.data.overallFeedback == resource.data.overallFeedback
+        && request.resource.data.additionFeedback == resource.data.additionFeedback;
+      allow delete: if false;
     }
 
     // 공개 리더보드: 웹 클라이언트 누구나 읽기 허용, 웹 쓰기는 금지(Admin SDK로만 작성)

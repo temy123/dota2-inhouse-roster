@@ -38,28 +38,28 @@
     </section>
 
     <section class="form-card" aria-labelledby="form-title">
-      <div class="form-heading"><p class="form-kicker">ANONYMOUS RESPONSE</p><h2 id="form-title">피드백 작성</h2><p>모든 항목을 작성해 주세요. 항목당 최대 2,000자까지 입력할 수 있습니다.</p></div>
+      <div class="form-heading"><p class="form-kicker">ANONYMOUS RESPONSE</p><h2 id="form-title">피드백 작성</h2><p>의견이 있는 항목만 자유롭게 작성해 주세요. 한 항목만 작성해도 전송할 수 있으며, 항목당 최대 4,000자입니다.</p></div>
       <form id="feedback-form" novalidate>
         <div class="question-list">
           <div class="question-field">
             <label for="feedback-balance"><span class="question-number">01</span> 밸런스적으로 개선되었으면 하는 점</label>
-            <textarea id="feedback-balance" name="balance" maxlength="2000" required placeholder="예: 팀 배정, MMR 차이, 영웅 제한 등 밸런스에 관한 의견을 적어 주세요."></textarea>
-            <div class="field-meta"><p class="field-error" id="error-balance" role="alert"></p><span id="count-balance" aria-live="polite">0 / 2,000</span></div>
+            <textarea id="feedback-balance" name="balance" maxlength="4000" placeholder="예: 팀 배정, MMR 차이, 영웅 제한 등 밸런스에 관한 의견을 적어 주세요."></textarea>
+            <div class="field-meta"><p class="field-error" id="error-balance" role="alert"></p><span id="count-balance" aria-live="polite">0 / 4,000</span></div>
           </div>
           <div class="question-field">
             <label for="feedback-teamwork"><span class="question-number">02</span> 팀적으로 개선되었으면 하는 점</label>
-            <textarea id="feedback-teamwork" name="teamwork" maxlength="2000" required placeholder="예: 오더, 소통, 게임 진행 방식 등 팀 플레이에 관한 의견을 적어 주세요."></textarea>
-            <div class="field-meta"><p class="field-error" id="error-teamwork" role="alert"></p><span id="count-teamwork" aria-live="polite">0 / 2,000</span></div>
+            <textarea id="feedback-teamwork" name="teamwork" maxlength="4000" placeholder="예: 오더, 소통, 게임 진행 방식 등 팀 플레이에 관한 의견을 적어 주세요."></textarea>
+            <div class="field-meta"><p class="field-error" id="error-teamwork" role="alert"></p><span id="count-teamwork" aria-live="polite">0 / 4,000</span></div>
           </div>
           <div class="question-field">
             <label for="feedback-overall"><span class="question-number">03</span> 전체적으로 느낀 점</label>
-            <textarea id="feedback-overall" name="overall" maxlength="2000" required placeholder="내전을 플레이하며 전반적으로 느낀 점을 자유롭게 적어 주세요."></textarea>
-            <div class="field-meta"><p class="field-error" id="error-overall" role="alert"></p><span id="count-overall" aria-live="polite">0 / 2,000</span></div>
+            <textarea id="feedback-overall" name="overall" maxlength="4000" placeholder="내전을 플레이하며 전반적으로 느낀 점을 자유롭게 적어 주세요."></textarea>
+            <div class="field-meta"><p class="field-error" id="error-overall" role="alert"></p><span id="count-overall" aria-live="polite">0 / 4,000</span></div>
           </div>
           <div class="question-field">
             <label for="feedback-additions"><span class="question-number">04</span> 추가되었으면, 수정되었으면 하는 점</label>
-            <textarea id="feedback-additions" name="additions" maxlength="2000" required placeholder="예: 규칙, 운영 방식, 안내 사항 등 새로 추가하거나 수정할 점을 적어 주세요."></textarea>
-            <div class="field-meta"><p class="field-error" id="error-additions" role="alert"></p><span id="count-additions" aria-live="polite">0 / 2,000</span></div>
+            <textarea id="feedback-additions" name="additions" maxlength="4000" placeholder="예: 규칙, 운영 방식, 안내 사항 등 새로 추가하거나 수정할 점을 적어 주세요."></textarea>
+            <div class="field-meta"><p class="field-error" id="error-additions" role="alert"></p><span id="count-additions" aria-live="polite">0 / 4,000</span></div>
           </div>
         </div>
         <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
